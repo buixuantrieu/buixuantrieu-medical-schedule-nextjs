@@ -8,41 +8,48 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { RegisterUser } from "@/api/auth/queries";
-
-const formSchema = z
-  .object({
-    email: z.string().max(50).email("Không phải định dạng email!"),
-    fullName: z.string().trim().min(1, "Không được để trống!").max(255),
-    cityId: z.string().trim().min(1, "Vui lòng chọn tỉnh/ thành phố!"),
-    address: z.string().trim().min(1, "Vui lòng nhập số nhà, tên đường!"),
-    districtId: z.string().trim().min(1, "Vui lòng chọn quận/ huyện!"),
-    phone: z
-      .string()
-      .trim()
-      .min(1, "Vui lòng nhập số điện thoại!")
-      .regex(/^(0[3-9])(\d{8})$|^(0[1-9]{1}[0-9]{1,2})(\d{7})$/, "Không đúng định dạng!"),
-    wardId: z.string().trim().min(1, "Vui lòng chọn phường/xã!"),
-    password: z
-      .string()
-      .trim()
-      .min(8, "Mật khẩu ít nhất 8 kí tự!")
-      .max(255)
-      .regex(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/,
-        "Mật khẩu phải chứa ít nhất một chữ cái viết hoa, một chữ cái viết thường, một chữ số và một ký tự đặc biệt!"
-      ),
-    confirmPassword: z.string(),
-    genre: z.string().min(1, "Vui lòng chọn giới tính!"),
-  })
-  .refine((value) => value.password === value.confirmPassword, {
-    message: "Mật khẩu và mật khẩu xác nhận không khớp!",
-    path: ["confirmPassword"],
-  });
+import { ROUTES } from "@/constants/routes";
+import { useCities, useDistricts, useWards } from "@/api/location/queries";
+import { ICity, IDistrict, IWard } from "@/type/interface";
+import { useEffect } from "react";
 
 export default function RegisterForm() {
+  const router = useRouter();
+  const { data: cityList } = useCities();
+
+  const formSchema = z
+    .object({
+      email: z.string().max(50).email("Không phải định dạng email!"),
+      fullName: z.string().trim().min(1, "Không được để trống!").max(255),
+      cityId: z.string().trim().min(1, "Vui lòng chọn tỉnh/ thành phố!"),
+      address: z.string().trim().min(1, "Vui lòng nhập số nhà, tên đường!"),
+      districtId: z.string().trim().min(1, "Vui lòng chọn quận/ huyện!"),
+      phone: z
+        .string()
+        .trim()
+        .min(1, "Vui lòng nhập số điện thoại!")
+        .regex(/^(0[3-9])(\d{8})$|^(0[1-9]{1}[0-9]{1,2})(\d{7})$/, "Không đúng định dạng!"),
+      wardId: z.string().trim().min(1, "Vui lòng chọn phường/xã!"),
+      password: z
+        .string()
+        .trim()
+        .min(8, "Mật khẩu ít nhất 8 kí tự!")
+        .max(255)
+        .regex(
+          /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/,
+          "Mật khẩu phải chứa ít nhất một chữ cái viết hoa, một chữ cái viết thường, một chữ số và một ký tự đặc biệt!"
+        ),
+      confirmPassword: z.string(),
+      genre: z.string().min(1, "Vui lòng chọn giới tính!"),
+    })
+    .refine((value) => value.password === value.confirmPassword, {
+      message: "Mật khẩu và mật khẩu xác nhận không khớp!",
+      path: ["confirmPassword"],
+    });
   const { mutate: registerUser } = RegisterUser();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -60,9 +67,42 @@ export default function RegisterForm() {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    registerUser({ userName: values.fullName, password: values.password });
-  }
+  const { data: districtList, refetch: refetchDistrict } = useDistricts(form.watch("cityId"));
+  const { data: wardList, refetch: refetchWard } = useWards(form.watch("districtId"));
+  useEffect(() => {
+    if (form.watch("cityId")) {
+      refetchDistrict();
+    }
+  }, [form.watch("cityId")]);
+
+  useEffect(() => {
+    if (form.watch("districtId")) {
+      refetchWard();
+    }
+  }, [form.watch("districtId")]);
+
+  const onSubmit = (values: z.infer<typeof formSchema>) => {
+    registerUser(
+      {
+        email: values.email,
+        fullName: values.fullName,
+        cityId: Number(values.cityId),
+        districtId: Number(values.districtId),
+        wardId: Number(values.wardId),
+        password: values.password,
+        genre: Number(values.genre),
+        phone: values.phone,
+        birthday: new Date(),
+        address: values.address,
+      },
+      {
+        onSuccess: () => {
+          router.push(ROUTES.AUTH.VERIFY);
+        },
+      }
+    );
+  };
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 ">
@@ -104,22 +144,26 @@ export default function RegisterForm() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Tỉnh/ Thành phố:</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select
+                    onValueChange={(value) => {
+                      field.onChange(value);
+
+                      form.setValue("districtId", "");
+                      form.setValue("wardId", "");
+                    }}
+                    defaultValue={field.value}
+                  >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Province/city" />
+                        <SelectValue placeholder="--- province/city ---" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem className="text-[13px]" value="1">
-                        Quảng Nam
-                      </SelectItem>
-                      <SelectItem className="text-[13px]" value="2">
-                        Huế
-                      </SelectItem>
-                      <SelectItem className="text-[13px]" value="3">
-                        Bình Định
-                      </SelectItem>
+                      {cityList?.data.map((city: ICity) => (
+                        <SelectItem value={String(city.id)} key={`city-${city.id}`}>
+                          {city.name}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -134,22 +178,26 @@ export default function RegisterForm() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Quận/ huyện:</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select
+                    disabled={!form.watch("cityId")}
+                    onValueChange={(value) => {
+                      field.onChange(value);
+
+                      form.setValue("wardId", "");
+                    }}
+                    defaultValue={field.value}
+                  >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="District" />
+                        <SelectValue placeholder="--- district ---" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem className="text-[13px]" value="1">
-                        Quảng Nam
-                      </SelectItem>
-                      <SelectItem className="text-[13px]" value="2">
-                        Huế
-                      </SelectItem>
-                      <SelectItem className="text-[13px]" value="3">
-                        Bình Định
-                      </SelectItem>
+                      {districtList?.data.map((district: IDistrict) => (
+                        <SelectItem value={String(district.id)} key={`district-${district.id}`}>
+                          {district.name}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -164,22 +212,22 @@ export default function RegisterForm() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Phường xã:</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select
+                    disabled={!form.watch("districtId")}
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Ward/commune" />
+                        <SelectValue placeholder="--- ward/commune ---" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem className="text-[13px]" value="1">
-                        Quảng Nam
-                      </SelectItem>
-                      <SelectItem className="text-[13px]" value="2">
-                        Huế
-                      </SelectItem>
-                      <SelectItem className="text-[13px]" value="3">
-                        Bình Định
-                      </SelectItem>
+                      {wardList?.data.map((ward: IWard) => (
+                        <SelectItem value={String(ward.id)} key={`ward-${ward.id}`}>
+                          {ward.name}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -262,13 +310,13 @@ export default function RegisterForm() {
                     >
                       <FormItem className="flex items-center space-x-3 space-y-0">
                         <FormControl>
-                          <RadioGroupItem value="nam" />
+                          <RadioGroupItem value="0" />
                         </FormControl>
                         <FormLabel className="font-normal">Nam</FormLabel>
                       </FormItem>
                       <FormItem className="flex items-center space-x-3 space-y-0">
                         <FormControl>
-                          <RadioGroupItem value="nu" />
+                          <RadioGroupItem value="1" />
                         </FormControl>
                         <FormLabel className="font-normal">Nữ</FormLabel>
                       </FormItem>

@@ -1,6 +1,7 @@
 import { publicClient } from "@/lib/axios";
+import { IRegister } from "./type";
 
-export const registerUser = async ({ userName, password }: { userName: string; password: string }) => {
-  const response = await publicClient.post("/auth/register", { userName, password });
+export const registerUser = async (data: IRegister) => {
+  const response = await publicClient.post("/auth/register", data);
   return response.data;
 };
