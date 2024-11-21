@@ -4,5 +4,6 @@ export const ROUTES = {
   },
   AUTH: {
     REGISTER: "/auth/register",
+    VERIFY: "/auth/verify-account",
   },
 };

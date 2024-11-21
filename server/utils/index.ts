@@ -1,6 +1,6 @@
 import nodemailer from "nodemailer";
-const randomNumber = () => {
-  return Math.floor(Math.random() * 899) + 1000;
+const randomCodeVerify = () => {
+  return Math.floor(Math.random() * 89999) + 1000000;
 };
 
 const sendMail = async (email: string, htmlContent: string) => {
@@ -27,5 +27,4 @@ const sendMail = async (email: string, htmlContent: string) => {
   }
 };
 
-
-export { sendMail, randomNumber };
+export { sendMail, randomCodeVerify };

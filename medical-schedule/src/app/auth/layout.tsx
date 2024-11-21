@@ -22,7 +22,7 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
             width={100}
             height={50}
             priority
-            className="aspect-[2/1] xl:w-[150px] xl:h-[75px]"
+            className="aspect-[2/1] md:w-[150px] md:h-[75px] xl:w-[150px] xl:h-[75px]"
           />
         </Link>
       </header>
