@@ -1,8 +1,9 @@
-import { useMutation } from "@tanstack/react-query";
-import { registerUser } from "./fetchers";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { registerUser, verifyAccount } from "./fetchers";
 
 enum QueryKeys {
   REGISTER = "register",
+  VERIFY = "verify",
 }
 
 const RegisterUser = () => {
@@ -11,4 +12,11 @@ const RegisterUser = () => {
     mutationFn: registerUser,
   });
 };
-export { RegisterUser };
+const VerifyAccount = () => {
+  return useMutation({
+    mutationKey: [QueryKeys.VERIFY],
+    mutationFn: verifyAccount,
+  });
+};
+
+export { RegisterUser, VerifyAccount };

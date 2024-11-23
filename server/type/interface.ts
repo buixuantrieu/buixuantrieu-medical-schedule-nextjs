@@ -7,11 +7,17 @@ export enum GENRE {
   MAN = 0,
   WOMEN = 1,
 }
+export enum ROLE {
+  ADMIN = 0,
+  USER = 1,
+  DOCTOR = 2,
+}
 
 export interface IRegister {
   email: string;
   password: string;
   fullName: string;
+  roleId?: number;
   cityId: number;
   address: string;
   districtId: number;

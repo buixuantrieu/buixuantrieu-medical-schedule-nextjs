@@ -15,9 +15,12 @@ import { RegisterUser } from "@/api/auth/queries";
 import { ROUTES } from "@/constants/routes";
 import { useCities, useDistricts, useWards } from "@/api/location/queries";
 import { ICity, IDistrict, IWard } from "@/type/interface";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { AxiosError } from "axios";
+import { Loader2 } from "lucide-react";
 
 export default function RegisterForm() {
+  const [isLoading, setLoading] = useState(false);
   const router = useRouter();
   const { data: cityList } = useCities();
 
@@ -82,6 +85,7 @@ export default function RegisterForm() {
   }, [form.watch("districtId")]);
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
+    setLoading(true);
     registerUser(
       {
         email: values.email,
@@ -97,7 +101,18 @@ export default function RegisterForm() {
       },
       {
         onSuccess: () => {
-          router.push(ROUTES.AUTH.VERIFY);
+          setLoading(false);
+          router.push(ROUTES.AUTH.VERIFY + `?email=${values.email}`);
+        },
+        onError: (e) => {
+          setLoading(false);
+          if (e instanceof AxiosError) {
+            if (e.status == 409) {
+              form.setError("email", {
+                message: "Email này đã được sử dụng!",
+              });
+            }
+          }
         },
       }
     );
@@ -333,8 +348,15 @@ export default function RegisterForm() {
                 Bạn đã có tài khoản?
               </Link>
             </div>
-            <Button type="submit" className="w-full rounded">
-              Đăng kí
+            <Button disabled={isLoading} type="submit" className="w-full rounded">
+              {isLoading ? (
+                <>
+                  <Loader2 className="animate-spin h-5 w-5 text-white" />
+                  Đăng kí
+                </>
+              ) : (
+                "Đăng kí"
+              )}
             </Button>
           </div>
         </div>

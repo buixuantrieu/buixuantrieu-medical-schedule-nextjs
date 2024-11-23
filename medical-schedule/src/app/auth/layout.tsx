@@ -11,7 +11,7 @@ interface AuthLayoutProps {
 const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
   return (
     <div className="flex flex-col min-h-[100vh]">
-      <div className="fixed bottom-1 right-1">
+      <div className="fixed bottom-1 right-1 z-10">
         <ModeToggle />
       </div>
       <header className="pb-2 border-b dark:border-[#6CACE4] ">
@@ -26,7 +26,7 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
           />
         </Link>
       </header>
-      <main className="flex-1">{children}</main>
+      <main className="flex-1 relative">{children}</main>
     </div>
   );
 };
