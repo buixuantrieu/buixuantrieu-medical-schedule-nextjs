@@ -1,6 +1,8 @@
+import prisma from "@lib/prisma";
 import nodemailer from "nodemailer";
+import { STATUS_USER } from "type/interface";
 const randomCodeVerify = () => {
-  return Math.floor(Math.random() * 89999) + 1000000;
+  return Math.floor(Math.random() * 899999) + 100000;
 };
 
 const sendMail = async (email: string, htmlContent: string) => {
@@ -16,7 +18,7 @@ const sendMail = async (email: string, htmlContent: string) => {
     const mailOptions = {
       from: "mingsuhomestay@gmail.com",
       to: email,
-      subject: "MingSu HomeStay",
+      subject: "Medical Schedule",
       html: htmlContent,
     };
     await transporter.sendMail(mailOptions);

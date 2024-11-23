@@ -1,5 +1,5 @@
 import prisma from "@lib/prisma";
-import { IRegister, STATUS_USER } from "type/interface";
+import { IRegister, ROLE, STATUS_USER } from "type/interface";
 import { v4 as uuid } from "uuid";
 import bcrypt from "bcryptjs";
 import { randomCodeVerify } from "@utils/index";
@@ -16,6 +16,7 @@ const registerAccount = async (data: IRegister) => {
     const user = await prisma.user.create({
       data: {
         id,
+        roleId: ROLE.USER,
         password: hashPass,
         email: data.email,
         codeVerify,
@@ -38,7 +39,51 @@ const registerAccount = async (data: IRegister) => {
       },
     });
   });
-  return result;
+  return codeVerify;
 };
 
-export { registerAccount };
+const checkExitEmail = async (email: string) => {
+  const user = await prisma.user.findFirst({
+    where: {
+      email,
+    },
+  });
+  if (user) {
+    return true;
+  }
+  return false;
+};
+
+const verifyAccount = async (email: string) => {
+  await prisma.user.updateMany({
+    where: {
+      email,
+    },
+    data: {
+      status: STATUS_USER.ACTIVATED,
+    },
+  });
+};
+
+const deleteInActiveAccounts = async () => {
+  await prisma.profile.deleteMany({
+    where: {
+      user: {
+        status: STATUS_USER.UNVERIFIED,
+        codeVerifyExpiresAt: {
+          lt: new Date(),
+        },
+      },
+    },
+  });
+  await prisma.user.deleteMany({
+    where: {
+      status: STATUS_USER.UNVERIFIED,
+      codeVerifyExpiresAt: {
+        lt: new Date(),
+      },
+    },
+  });
+};
+
+export { registerAccount, checkExitEmail, verifyAccount, deleteInActiveAccounts };
