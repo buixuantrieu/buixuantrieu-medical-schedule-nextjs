@@ -41,8 +41,8 @@ model Profile {
 model Specialty {
   id          Int      @id @default(autoincrement())
   name        String
-  description String
-  image       String
+  description String   @db.Text
+  logo        String   @db.Text
   isDelete    Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

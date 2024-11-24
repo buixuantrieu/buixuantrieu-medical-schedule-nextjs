@@ -1,4 +1,4 @@
-import express from "express";
+const express = require("express");
 import locationController from "@controllers/location";
 const router = express.Router();
 

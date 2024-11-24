@@ -8,6 +8,8 @@ import cron from "node-cron";
 import authRoute from "@routes/authRoute";
 import locationRoute from "@routes/locationRoute";
 import userRoute from "@routes/userRoute";
+import specialRoute from "@routes/specialtyRoute";
+
 import { deleteInActiveAccounts } from "@services/authService";
 
 const app = express();
@@ -29,6 +31,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use("/api/v1/auth", authRoute);
 app.use("/api/v1/location", locationRoute);
 app.use("/api/v1/user", userRoute);
+app.use("/api/v1/specialty", specialRoute);
 cron.schedule("*/3 * * * *", async () => {
   try {
     await deleteInActiveAccounts();

@@ -16,13 +16,17 @@ class userController {
           res.status(404).json({ message: "Get user successfully!" });
         }
       }
-    } catch (error) {}
+    } catch (error) {
+      res.status(500).json({ message: "Internal Server Error. Please try again later." });
+    }
   }
   static async getUserInfo(req: CustomRequest, res: Response) {
     try {
       const user = await fetchUserInfo(req.userId as string);
       res.status(200).json({ message: "Get userInfo successfully!", data: user });
-    } catch (error) {}
+    } catch (error) {
+      res.status(500).json({ message: "Internal Server Error. Please try again later." });
+    }
   }
 }
 export default userController;

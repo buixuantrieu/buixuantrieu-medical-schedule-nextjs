@@ -13,6 +13,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { QueryKeys } from "@/api/user/queries";
 import { ROUTES } from "@/constants/routes";
+import toast from "react-hot-toast";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -42,10 +43,10 @@ export default function LoginForm() {
           await queryClient.invalidateQueries({
             queryKey: [QueryKeys.GET_USER_INFO],
           });
-
-          if (result.data.user === ROLE.ADMIN) {
-            console.log("admin");
-          } else if (result.data.user === ROLE.DOCTOR) {
+          toast.success("Đăng nhập thành công!");
+          if (result.data.user.roleId === ROLE.ADMIN) {
+            router.push(ROUTES.ADMIN.DASHBOARD);
+          } else if (result.data.user.roleId === ROLE.DOCTOR) {
             console.log("doctor");
           } else {
             router.push(ROUTES.USER.HOME);

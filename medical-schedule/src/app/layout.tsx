@@ -24,7 +24,7 @@ export default function RootLayout({
         <head />
         <body className={roboto.className}>
           <QueryClientProvider>
-            <Toaster position="top-center" />
+            <Toaster position="top-right" />
             <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
               <div className="fixed bottom-1 right-1 z-10">
                 <ModeToggle />
