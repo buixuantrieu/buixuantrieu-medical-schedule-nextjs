@@ -1,8 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
-import { fetchAccount } from "./fetchers";
+import { fetchAccount, fetchUserInfo } from "./fetchers";
 
-enum QueryKeys {
+export enum QueryKeys {
   GET_USER = "get-user",
+  GET_USER_INFO = "get-user-info",
 }
 const useFetchUser = (email: string) =>
   useQuery({
@@ -12,4 +13,11 @@ const useFetchUser = (email: string) =>
     retry: false,
   });
 
-export { useFetchUser };
+const useGetUserInfo = () =>
+  useQuery({
+    queryKey: [QueryKeys.GET_USER_INFO],
+    queryFn: fetchUserInfo,
+    retry: false,
+  });
+
+export { useFetchUser, useGetUserInfo };

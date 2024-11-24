@@ -3,6 +3,7 @@ import { IRegister, ROLE, STATUS_USER } from "type/interface";
 import { v4 as uuid } from "uuid";
 import bcrypt from "bcryptjs";
 import { randomCodeVerify } from "@utils/index";
+import jwt from "jsonwebtoken";
 
 const salt = bcrypt.genSaltSync(10);
 
@@ -86,4 +87,36 @@ const deleteInActiveAccounts = async () => {
   });
 };
 
-export { registerAccount, checkExitEmail, verifyAccount, deleteInActiveAccounts };
+const loginUser = async (email: string, password: string) => {
+  const user = await prisma.user.findFirst({
+    where: {
+      email,
+    },
+  });
+  if (user) {
+    const checkPass = bcrypt.compareSync(password, user.password);
+    if (checkPass) {
+      return user;
+    }
+  }
+  return false;
+};
+
+const createAccessToken = async (data: { id: string }) => {
+  const result = jwt.sign(data, process.env.PRIMARY_KEY_ACCESS_TOKEN as string, { expiresIn: "1h" });
+  return result;
+};
+const createRefreshToken = async (data: { id: string }) => {
+  const result = jwt.sign(data, process.env.PRIMARY_KEY_REFRESH_TOKEN as string, { expiresIn: "7d" });
+  return result;
+};
+
+export {
+  registerAccount,
+  checkExitEmail,
+  verifyAccount,
+  deleteInActiveAccounts,
+  loginUser,
+  createAccessToken,
+  createRefreshToken,
+};

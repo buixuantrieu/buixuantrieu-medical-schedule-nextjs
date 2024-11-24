@@ -1,7 +1,14 @@
-import { checkExitEmail, registerAccount, verifyAccount } from "@services/authService";
+import {
+  checkExitEmail,
+  createAccessToken,
+  createRefreshToken,
+  loginUser,
+  registerAccount,
+  verifyAccount,
+} from "@services/authService";
 import { sendMail } from "@utils/index";
 import { Request, Response } from "express";
-import { z } from "zod";
+import { date, z } from "zod";
 
 class authController {
   static async register(req: Request, res: Response) {
@@ -181,16 +188,37 @@ class authController {
     }
   }
   static async verify(req: Request, res: Response) {
-    const { email } = req.body;
-    console.log(req.body);
-
-    if (email) {
-      verifyAccount(email as string);
-      res.status(201).json({ message: "Verify account successfully!" });
+    try {
+      const { email } = req.body;
+      if (email) {
+        verifyAccount(email as string);
+        res.status(201).json({ message: "Verify account successfully!" });
+      }
+    } catch (error) {
+      res.status(500).json({ message: "Internal Server Error. Please try again later." });
     }
   }
   static async login(req: Request, res: Response) {
-    console.log(req.body);
+    try {
+      const { email, password } = req.body;
+      const user = await loginUser(email, password);
+      if (user) {
+        const accessToken = await createAccessToken({ id: user.id });
+        const refreshToken = await createRefreshToken({ id: user.id });
+        res.status(200).json({
+          message: "Login success!",
+          data: {
+            user,
+            refreshToken,
+            accessToken,
+          },
+        });
+      } else {
+        res.status(401).json({ message: "Invalid email or password!" });
+      }
+    } catch (error) {
+      res.status(500).json({ message: "Internal Server Error. Please try again later." });
+    }
   }
 }
 export default authController;

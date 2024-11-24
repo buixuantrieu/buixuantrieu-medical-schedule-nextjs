@@ -38,6 +38,16 @@ model Profile {
   ward       Ward     @relation(fields: [wardId], references: [id])
 }
 
+model Specialty {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String
+  image       String
+  isDelete    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
 model City {
   id       Int        @id
   name     String     @db.VarChar(64)

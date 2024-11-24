@@ -1,16 +1,25 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+import { LoginUser } from "@/api/auth/queries";
 import { Button } from "@/components/ui/button";
+import { useQueryClient } from "@tanstack/react-query";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { ROLE } from "@/type/enum";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { QueryKeys } from "@/api/user/queries";
+import { ROUTES } from "@/constants/routes";
 
 export default function LoginForm() {
+  const router = useRouter();
+  const queryClient = useQueryClient();
+  const { mutate: loginUser } = LoginUser();
   const formSchema = z.object({
-    email: z.string().max(50).email("Không phải định dạng email!"),
+    email: z.string().min(1, "Vui lòng nhập email!").max(50).email("Không phải định dạng email!"),
     password: z.string().trim().min(1, "Vui lòng nhập mật khẩu!"),
   });
 
@@ -22,7 +31,31 @@ export default function LoginForm() {
     },
   });
   const onSubmit = (values: z.infer<typeof formSchema>) => {
-    console.log(values);
+    loginUser(
+      { email: values.email, password: values.password },
+      {
+        onSuccess: async (result) => {
+          localStorage.setItem("accessToken", result.data.accessToken);
+          document.cookie = `refreshToken=${result.data.refreshToken}; max-age=${
+            7 * 24 * 60 * 60
+          }; path=/; secure; samesite=strict`;
+          await queryClient.invalidateQueries({
+            queryKey: [QueryKeys.GET_USER_INFO],
+          });
+
+          if (result.data.user === ROLE.ADMIN) {
+            console.log("admin");
+          } else if (result.data.user === ROLE.DOCTOR) {
+            console.log("doctor");
+          } else {
+            router.push(ROUTES.USER.HOME);
+          }
+        },
+        onError: () => {
+          form.setError("password", { message: "Sai email hoặc mật khẩu!" });
+        },
+      }
+    );
   };
   return (
     <h1 className="w-[300px]">

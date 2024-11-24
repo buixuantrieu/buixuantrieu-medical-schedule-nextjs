@@ -1,3 +1,6 @@
+"use client";
+
+import { useGetUserInfo } from "@/api/user/queries";
 import { ModeToggle } from "@/components/mode-toggle";
 import { ROUTES } from "@/constants/routes";
 import Image from "next/image";
@@ -9,6 +12,7 @@ interface AuthLayoutProps {
 }
 
 const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
+  const { data } = useGetUserInfo();
   return (
     <div className="flex flex-col min-h-[100vh]">
       <div className="fixed bottom-1 right-1 z-10">
