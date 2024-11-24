@@ -47,7 +47,7 @@ httpClient.interceptors.response.use(
         Promise.reject(refreshError);
 
         localStorage.removeItem("accessToken");
-        window.location.href = "http://localhost:5173/auth";
+        window.location.href = "http://localhost:3000/auth/login";
       }
     }
     return Promise.reject(error);
@@ -57,10 +57,9 @@ httpClient.interceptors.response.use(
 const refreshAccessToken = async (refreshToken: string): Promise<string> => {
   if (!refreshToken) throw new Error("No refresh token available");
 
-  const response = await axios.post("http://localhost:3000/api/v1/auth/refresh-token", {
+  const response = await axios.post("http://localhost:8080/api/v1/auth/refresh-token", {
     token: refreshToken,
   });
-
   return response.data.accessToken;
 };
 

@@ -12,3 +12,12 @@ export interface IWard {
   name: string;
   districtId: number;
 }
+export interface ISpecialty {
+  id: number;
+  logo: string;
+  name: string;
+  description: string;
+  isDelete: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}

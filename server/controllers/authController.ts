@@ -6,9 +6,11 @@ import {
   registerAccount,
   verifyAccount,
 } from "@services/authService";
+import { fetchUserInfo } from "@services/userService";
 import { sendMail } from "@utils/index";
 import { Request, Response } from "express";
-import { date, z } from "zod";
+import { z } from "zod";
+import jwt from "jsonwebtoken";
 
 class authController {
   static async register(req: Request, res: Response) {
@@ -218,6 +220,24 @@ class authController {
       }
     } catch (error) {
       res.status(500).json({ message: "Internal Server Error. Please try again later." });
+    }
+  }
+  static async refreshToken(req: Request, res: Response) {
+    const { token: refreshToken } = req.body;
+
+    if (!refreshToken) {
+      return res.status(400).json({ message: "Refresh token is required" });
+    }
+    try {
+      const decoded = jwt.verify(refreshToken, process.env.PRIMARY_KEY_REFRESH_TOKEN as string) as { id: string };
+      const user = await fetchUserInfo(decoded.id);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      const newAccessToken = await createAccessToken({ id: user.id });
+      return res.json({ accessToken: newAccessToken });
+    } catch (error) {
+      return res.status(403).json({ message: "Invalid or expired refresh token" });
     }
   }
 }
