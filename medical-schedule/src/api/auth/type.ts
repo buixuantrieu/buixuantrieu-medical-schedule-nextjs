@@ -10,3 +10,7 @@ export interface IRegister {
   password: string;
   genre: number;
 }
+export interface ILogin {
+  email: string;
+  password: string;
+}

@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { fetchCity, fetchDistrictByCityId, fetchDistrict, fetchWardByDistrictId } from "./fetchers";
+import { fetchCity, fetchDistrictByCityId, fetchWardByDistrictId } from "./fetchers";
 
 enum QueryKeys {
   GET_CITY = "get-city",
