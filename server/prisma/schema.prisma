@@ -8,16 +8,20 @@ datasource db {
 }
 
 model User {
-  id                  String   @id
+  id                  String          @id
   email               String
   password            String
   roleId              Int
   codeVerify          Int
   codeVerifyExpiresAt DateTime
-  status              Int      @default(0)
-  updatedAt           DateTime @updatedAt
-  createdAt           DateTime @default(now())
+  status              Int             @default(0)
+  updatedAt           DateTime        @updatedAt
+  createdAt           DateTime        @default(now())
   Profile             Profile?
+  Doctor              Doctor?
+  UserConnection      UserConnection?
+  messagesSent        Message[]       @relation("MessagesSent")
+  messagesReceived    Message[]       @relation("MessagesReceived")
 }
 
 model Profile {
@@ -38,6 +42,36 @@ model Profile {
   ward       Ward     @relation(fields: [wardId], references: [id])
 }
 
+model Workplace {
+  id              Int      @id @default(autoincrement())
+  name            String
+  description     String   @db.LongText
+  logo            String
+  cityId          Int
+  districtId      Int
+  wardId          Int
+  address         String
+  phone           String
+  typeOfWorkplace Int
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  Doctor          Doctor[]
+}
+
+model Doctor {
+  userId      String    @id @unique
+  user        User      @relation(fields: [userId], references: [id])
+  description String    @db.LongText
+  specialtyId Int
+  specialty   Specialty @relation(fields: [specialtyId], references: [id])
+  workplaceId Int
+  workplace   Workplace @relation(fields: [workplaceId], references: [id])
+  degree      Int
+  status      Int
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
 model Specialty {
   id          Int      @id @default(autoincrement())
   name        String
@@ -46,6 +80,33 @@ model Specialty {
   isDelete    Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  Doctor      Doctor[]
+}
+
+model Message {
+  id           Int           @id @default(autoincrement())
+  senderId     String
+  receiverId   String
+  userSender   User          @relation("MessagesSent", fields: [senderId], references: [id])
+  userReceiver User          @relation("MessagesReceived", fields: [receiverId], references: [id])
+  messageText  String        @db.Text
+  createdAt    DateTime      @default(now())
+  isDelete     Boolean       @default(false)
+  MessageMedia MessageMedia?
+}
+
+model MessageMedia {
+  messageId Int     @id
+  message   Message @relation(fields: [messageId], references: [id])
+  mediaType Int
+  mediaUrl  String  @db.Text
+}
+
+model UserConnection {
+  userId   String   @id
+  user     User     @relation(fields: [userId], references: [id])
+  status   Boolean  @default(false)
+  lastSeen DateTime @default(now())
 }
 
 model City {

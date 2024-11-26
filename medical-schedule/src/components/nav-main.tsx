@@ -1,6 +1,6 @@
 "use client";
 
-import { BookOpen, Bot, ChevronRight, Settings2, HeartHandshake } from "lucide-react";
+import { BookOpen, Bot, ChevronRight, Settings2, HeartHandshake, ChartBarDecreasing } from "lucide-react";
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
@@ -34,18 +34,19 @@ export function NavMain() {
         },
       ],
     },
+
     {
-      title: "Models",
+      title: "Bài viết",
       url: "#",
-      icon: Bot,
+      icon: ChartBarDecreasing,
       items: [
         {
-          title: "Genesis",
-          url: "#",
+          title: "Danh sách bài viết",
+          url: ROUTES.ADMIN.POST,
         },
         {
-          title: "Explorer",
-          url: "#",
+          title: "Thêm bài viết",
+          url: ROUTES.ADMIN.NEW_POST,
         },
         {
           title: "Quantum",

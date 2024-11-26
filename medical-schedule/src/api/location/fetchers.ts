@@ -20,3 +20,4 @@ export const fetchWardByDistrictId = async (districtId: string) => {
   });
   return response.data;
 };
+

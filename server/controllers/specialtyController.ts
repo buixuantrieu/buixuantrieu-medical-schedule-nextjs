@@ -11,7 +11,6 @@ const specialtyDataSchema = z.object({
   description: z.string().min(1),
   logo: z.string().url(),
 });
-
 class specialtyController {
   static async create(req: Request, res: Response) {
     try {

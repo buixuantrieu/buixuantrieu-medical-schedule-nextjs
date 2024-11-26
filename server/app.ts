@@ -9,8 +9,11 @@ import authRoute from "@routes/authRoute";
 import locationRoute from "@routes/locationRoute";
 import userRoute from "@routes/userRoute";
 import specialRoute from "@routes/specialtyRoute";
+import chatRoute from "@routes/chatRoute";
 
 import { deleteInActiveAccounts } from "@services/authService";
+
+import { setupSocketServer } from "./socket/socketServer";
 
 const app = express();
 dotenv.config();
@@ -32,6 +35,7 @@ app.use("/api/v1/auth", authRoute);
 app.use("/api/v1/location", locationRoute);
 app.use("/api/v1/user", userRoute);
 app.use("/api/v1/specialty", specialRoute);
+app.use("/api/v1/chat", chatRoute);
 cron.schedule("*/3 * * * *", async () => {
   try {
     await deleteInActiveAccounts();
@@ -39,6 +43,7 @@ cron.schedule("*/3 * * * *", async () => {
     console.log(error);
   }
 });
+setupSocketServer(server);
 server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
