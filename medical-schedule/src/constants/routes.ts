@@ -10,5 +10,7 @@ export const ROUTES = {
     DASHBOARD: "/admin",
     SPECIALTY: "/admin/specialty",
     NEW_SPECIALTY: "/admin/specialty/new",
+    POST: "/admin/post",
+    NEW_POST: "/admin/post/new",
   },
 };
